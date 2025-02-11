@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Поиск значений в таблице</title>
+    <script type="text/javascript" src="./scripts/plugins.js"></script>
+    <script type="text/javascript" src="./scripts/plugins-ui.js"></script>
+    <link rel="stylesheet" href="./styles/plugins.css" />
+    <script type="text/javascript" src="./scripts/script.js"></script>
+    <link rel="stylesheet" href="./styles/style.css" />
+  </head>
+  <body>
+    <div id="header">
+      <p>Максимальный диапазон поиска: A1:ZZ1000</p>
+    </div>
+
+    <div id="labels">
+      <label>
+        <input type="radio" name="search-mode" value="single" checked />
+        Искать по указанному листу
+      </label>
+      <label>
+        <input type="radio" name="search-mode" value="all" />
+        Искать по всем листам
+      </label>
+    </div>
+
+    <div id="inputs">
+      <div id="sheet-name-container">
+        <label for="sheet-name">Выбор листа:</label>
+        <select id="sheet-name"></select>
+      </div>
+      <!-- <div id="sheet-name-container0">
+        <label for="sheet-name0">Название листа:</label>
+        <input id="sheet-name0" type="text" value="Отчетность" />
+      </div> -->
+      <div id="value-container">
+        <label for="search-value">Ввод значения:</label>
+        <input id="search-value" type="text" value=" " />
+      </div>
+      <div id="search-comment-container">
+        По умолчанию установлено значение неразрывного пробела. Удалите его
+        перед вводом нового значения
+      </div>
+    </div>
+
+    <div id="start-container"><button id="start-button">Найти</button></div>
+
+    <div id="result-message"></div>
+    <script>
+      // Скрытие/отображение ввода имени листа в зависимости от выбранного режима
+      document
+        .querySelectorAll('input[name="search-mode"]')
+        .forEach((radio) => {
+          radio.addEventListener("change", function () {
+            const sheetNameContainer = document.getElementById(
+              "sheet-name-container"
+            );
+
+            if (this.value === "single") {
+              sheetNameContainer.classList.remove("hidden");
+            } else {
+              sheetNameContainer.classList.add("hidden");
+            }
+          });
+        });
+    </script>
+  </body>
+</html>
