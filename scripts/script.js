@@ -3,16 +3,12 @@
         let resultMessage = document.getElementById('result-message');
         let sheetSelect = document.getElementById('sheet-name');
         sheetSelect.innerHTML = '';
-        const allSheets = await main0();
-        
-        // setTimeout(() => {
-        //     console.log("1s");
-        // }, 1000);
+        const [allSheets, activeSheet] = await main0();
         
         allSheets.forEach(sheet => {
             let option = document.createElement('option');
             option.value = option.textContent = sheet;
-            if (sheet === "Отчетность") option.selected = true;
+            if (sheet === activeSheet) option.selected = true;
             sheetSelect.appendChild(option);
         });
 
@@ -38,13 +34,15 @@
         this.executeCommand("close", "");
     };
 
-    function findShNames() {
+
+    function findSheetNames() {
+        const activeSheet = Api.GetActiveSheet().GetName()
         const sheets = Api.GetSheets();
-        let result0 = []
+        let allSheets = []
         sheets.forEach(sheet => {
-            result0.push(sheet.GetName())
+            allSheets.push(sheet.GetName())
         });
-        return result0;
+        return [allSheets, activeSheet];
     };
 
     function findValuesInWorkbook() {
@@ -88,26 +86,27 @@
         return result;
 
         function getLastRow(sh) {
-            for (let row = 1000; row > 0; row--) {
+            for (let row = 5000; row > 0; row--) {
                 let rowValues = [];
                 for (let col = 0; col < 701; col++) { // A-ZZ
                     let cellValue = sh.GetRangeByNumber(row, col).GetValue();
                     if (cellValue) rowValues.push(cellValue);
                 }
                 if (rowValues.join('').trim() !== '') {
-                    console.info(row)
-                    return row;
+                    console.log(`lastRow: ${row + 1}`)
+                    return row + 1;
                 }
             }
-            return 1000
+            return 5000
         }
 
         function findValue(sheet, range, value) {
             let findedCells = [];
             let data = range.GetValue();
-
+            // value = String(value)
             data.forEach((row, rowIndex) => {
                 row.forEach((cell, colIndex) => {
+                    // cell = String(cell)
                     if (cell === value) {
                         findedCells.push(sheet.GetRangeByNumber(rowIndex, colIndex).GetAddress(false, false, "xlA1", false));
                     }
@@ -121,7 +120,7 @@
 
     async function main0() {
         return new Promise((resolve) => {
-            window.Asc.plugin.callCommand(findShNames, false, false, function (value) {
+            window.Asc.plugin.callCommand(findSheetNames, false, false, function (value) {
                 resolve(value)
             })
         })
