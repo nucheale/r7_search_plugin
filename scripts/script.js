@@ -1,5 +1,18 @@
 (function (window, undefined) {
     window.Asc.plugin.init = async function () {
+        let searchRangeChange = document.getElementById('search_range_change')
+        const searchRangeValue = document.getElementById('search_range_value')
+        let searchRangeSubmit = document.getElementById('search_range_submit')
+        searchRangeChange.addEventListener('click', function() {
+            console.info('change click handled')
+            searchRangeValue.readOnly = false
+        })
+        searchRangeSubmit.addEventListener('click', async function () {
+            let rangeValue = searchRangeValue.value
+            // console.log(rangeValue)
+            searchRangeValue.readOnly = true
+        })
+
         let resultMessage = document.getElementById('result-message');
         let sheetSelect = document.getElementById('sheet-name');
         sheetSelect.innerHTML = '';
@@ -22,10 +35,11 @@
             console.info('start click handled')
             resultMessage.innerText = 'Поиск...'
             await new Promise(resolve => setTimeout(resolve, 500)); // Пауза 0,5 сек для корректного обновления resultMessage
+            let searchRange = searchRangeValue.value;
             let searchMode = document.querySelector('input[name="search-mode"]:checked').value;
             let sheetName = sheetSelect.value;
             let searchValue = document.getElementById('search-value').value;
-            const result = await main(sheetName, searchValue, searchMode);
+            const result = await main(searchRange, sheetName, searchValue, searchMode);
             resultMessage.innerText = result;
         });
     };
@@ -44,8 +58,15 @@
         });
         return [allSheets, activeSheet];
     };
-
+    
     function findValuesInWorkbook() {
+        let result = '';
+        const searchRange = Asc.scope.searchRange
+        if (!checkRange(searchRange)) {
+            result = 'Неверный диапазон'
+            return result
+        }
+
         const searchValue = Asc.scope.searchValue;
         const searchMode = Asc.scope.searchMode;
         const sheetName = Asc.scope.sheetName;
@@ -70,7 +91,6 @@
         console.info('resultArray: ');
         console.info(resultArray);
 
-        let result = '';
         if (resultArray.length > 0) {
             result += 'Найденные ячейки:\n\n'
             resultArray.forEach(element => {
@@ -84,6 +104,17 @@
         }
 
         return result;
+
+        function checkRange(range) {
+            console.log(range)
+            const regexRange = /^([A-Z]{1,3})(\d{1,7}):([A-Z]{1,3})(\d{1,7})$/i
+            console.log(regexRange.test(range))
+            if (!regexRange.test(range)) return false
+            const [_, col1, row1, col2, row2] = regexRange.exec(range)
+            console.log(col1 <= col2 && row1 <= row2)
+            console.log([col1, col2, row1, row2])
+            return col1 <= col2 && parseInt(row1) <= parseInt(row2)
+        }
 
         function getLastRow(sh) {
             for (let row = 5000; row > 0; row--) {
@@ -126,8 +157,9 @@
         })
     }
 
-    async function main(sheetName, searchValue, searchMode) {
+    async function main(searchRange, sheetName, searchValue, searchMode) {
         return new Promise((resolve) => {
+            Asc.scope.searchRange = searchRange;
             Asc.scope.sheetName = sheetName;
             Asc.scope.searchValue = searchValue;
             Asc.scope.searchMode = searchMode;

@@ -9,6 +9,10 @@ body {
   color: #000;
 }
 
+#div100px {
+  height: 50px;
+}
+
 #header {
   width: 100%;
   text-align: left;
