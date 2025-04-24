@@ -9,48 +9,71 @@ body {
   color: #000;
 }
 
-#div100px {
-  height: 50px;
+.divider {
+  width: 100%;
+  height: 1px;
+  /* background-color: #ccc; */
+  /* border: 1px solid red;  */
+  margin: 6px 0;
+}
+
+.divider-null {
+  width: 100%;
+  height: 0px;
+  /* background-color: #ccc; */
+  border: 0; 
+  margin: 6px 0;
 }
 
 #header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   width: 100%;
   text-align: left;
   font-weight: bold;
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
 }
 
-#labels label {
+#header input {
+  /* width: 60%; */
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.labels label {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-#labels,
-#inputs {
+.labels,
+.inputs {
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: 100%;
   max-width: 600px;
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
 }
 
-#inputs div {
+.inputs div {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
 }
 
-#inputs label {
+.inputs label {
   width: 30%;
   min-width: 100px;
   text-align: left;
   font-weight: bold;
 }
 
-#inputs select {
+.inputs select {
   /* flex-grow: 1; */
   width: 60%;
   padding: 4px;
@@ -58,7 +81,7 @@ body {
   border-radius: 5px;
 }
 
-#inputs input {
+.inputs input {
   /* flex-grow: 1; */
   width: 60%;
   padding: 4px;

@@ -9,17 +9,31 @@
     <script type="text/javascript" src="./scripts/script.js"></script>
     <link rel="stylesheet" href="./styles/style.css" />
   </head>
+
   <body>
     <div id="header">
       <p>Диапазон поиска:</p>
-      <input id="search_range_value" type="text" value="A1:ZZ5000" readonly>
-      <input id="search_range_submit" type="submit" value="Подтвердить">
-      <button id="search_range_change">Изменить</button>
+      <input
+        id="search_range_value"
+        type="text"
+        spellcheck="false"
+        placeholder="A1:Z1000"
+        value="A1:ZZ5000"
+      />
     </div>
 
-    <div id="div100px"></div>
+    <hr class="divider" />
 
-    <div id="labels">
+    <div class="inputs">
+      <div id="sheet-name-container">
+        <label for="sheet-name">Выбор листа:</label>
+        <select id="sheet-name"></select>
+      </div>
+    </div>
+
+    <hr class="divider-null" />
+
+    <div class="labels">
       <label>
         <input type="radio" name="search-mode" value="single" checked />
         Искать по указанному листу
@@ -30,28 +44,48 @@
       </label>
     </div>
 
-    <div id="inputs">
-      <div id="sheet-name-container">
-        <label for="sheet-name">Выбор листа:</label>
-        <select id="sheet-name"></select>
-      </div>
-      <!-- <div id="sheet-name-container0">
-        <label for="sheet-name0">Название листа:</label>
-        <input id="sheet-name0" type="text" value="Отчетность" />
-      </div> -->
+    <hr class="divider" />
+
+    <div class="labels">
+      <label>
+        <input type="radio" name="search-type" value="#NAME!" />
+        Искать #ИМЯ
+      </label>
+      <label>
+        <input type="radio" name="search-type" value="#REF!" />
+        Искать #ССЫЛКА
+      </label>
+      <label>
+        <input type="radio" name="search-type" value="#VALUE!" />
+        Искать #ЗНАЧ
+      </label>
+      <label>
+        <input type="radio" name="search-type" value="#N/A" />
+        Искать #Н/Д
+      </label>
+      <label>
+        <input type="radio" name="search-type" value="any-text" checked />
+        Искать по вводу
+      </label>
+    </div>
+
+    <div class="inputs">
       <div id="value-container">
-        <label for="search-value">Ввод значения:</label>
-        <input id="search-value" type="text" value=" " />
+        <label for="search-value">Значение:</label>
+        <!-- Дефолт значение - неразрывный проблел ' ' -->
+        <input id="search-value" type="text" value="&nbsp" />
       </div>
       <div id="search-comment-container">
         По умолчанию установлено значение неразрывного пробела. Удалите его
         перед вводом нового значения
       </div>
     </div>
-
-    <div id="start-container"><button id="start-button">Найти</button></div>
+    <div id="start-container">
+      <button id="start-button">Найти</button>
+    </div>
 
     <div id="result-message"></div>
+
     <script>
       // Скрытие/отображение ввода имени листа в зависимости от выбранного режима
       document
@@ -66,6 +100,26 @@
               sheetNameContainer.classList.remove("hidden");
             } else {
               sheetNameContainer.classList.add("hidden");
+            }
+          });
+        });
+      // Скрытие/отображение ввода имени листа в зависимости от выбранного режима
+      document
+        .querySelectorAll('input[name="search-type"]')
+        .forEach((radio) => {
+          radio.addEventListener("change", function () {
+            const [valueContainer, searchCommentContainer] =
+              document.querySelectorAll(
+                "#value-container, #search-comment-container"
+              );
+            if (this.value === "any-text") {
+              [valueContainer, searchCommentContainer].forEach((e) => {
+                e.classList.remove("hidden");
+              });
+            } else {
+              [valueContainer, searchCommentContainer].forEach((e) => {
+                e.classList.add("hidden");
+              });
             }
           });
         });

@@ -1,23 +1,10 @@
 (function (window, undefined) {
     window.Asc.plugin.init = async function () {
-        let searchRangeChange = document.getElementById('search_range_change')
-        const searchRangeValue = document.getElementById('search_range_value')
-        let searchRangeSubmit = document.getElementById('search_range_submit')
-        searchRangeChange.addEventListener('click', function() {
-            console.info('change click handled')
-            searchRangeValue.readOnly = false
-        })
-        searchRangeSubmit.addEventListener('click', async function () {
-            let rangeValue = searchRangeValue.value
-            // console.log(rangeValue)
-            searchRangeValue.readOnly = true
-        })
-
         let resultMessage = document.getElementById('result-message');
         let sheetSelect = document.getElementById('sheet-name');
         sheetSelect.innerHTML = '';
         const [allSheets, activeSheet] = await main0();
-        
+
         allSheets.forEach(sheet => {
             let option = document.createElement('option');
             option.value = option.textContent = sheet;
@@ -25,7 +12,7 @@
             sheetSelect.appendChild(option);
         });
 
-        let inputs = document.querySelectorAll('#sheet-name, #search-value');
+        const inputs = document.querySelectorAll('input');
         inputs.forEach(input => { //обновление resultMessage при изменении инпутов
             input.addEventListener('input', () => {
                 if (resultMessage.innerText) resultMessage.innerText = '';
@@ -35,10 +22,20 @@
             console.info('start click handled')
             resultMessage.innerText = 'Поиск...'
             await new Promise(resolve => setTimeout(resolve, 500)); // Пауза 0,5 сек для корректного обновления resultMessage
-            let searchRange = searchRangeValue.value;
-            let searchMode = document.querySelector('input[name="search-mode"]:checked').value;
-            let sheetName = sheetSelect.value;
-            let searchValue = document.getElementById('search-value').value;
+
+            // по типу поиска определяем значения для поиска (ЗНАЧ, ИМЯ, .., собственное значение) 
+            const searchType = document.querySelector('input[name="search-type"]:checked').value;
+            let searchValue
+            if (searchType === 'any-text') {
+                searchValue = document.getElementById('search-value').value;
+            } else {
+                searchValue = searchType
+            }
+
+            // определяем остальные основные переменные
+            const searchRange = document.getElementById('search_range_value').value
+            const searchMode = document.querySelector('input[name="search-mode"]:checked').value;
+            const sheetName = sheetSelect.value;
             const result = await main(searchRange, sheetName, searchValue, searchMode);
             resultMessage.innerText = result;
         });
@@ -58,14 +55,18 @@
         });
         return [allSheets, activeSheet];
     };
-    
+
     function findValuesInWorkbook() {
         let result = '';
-        const searchRange = Asc.scope.searchRange
+
+        // проверяем корректность диапазона для поиска
+        let searchRange = Asc.scope.searchRange
         if (!checkRange(searchRange)) {
             result = 'Неверный диапазон'
             return result
         }
+
+        parseXLRange(searchRange)
 
         const searchValue = Asc.scope.searchValue;
         const searchMode = Asc.scope.searchMode;
@@ -74,7 +75,7 @@
         // получаем список листов для поиска
         switch (searchMode) {
             case 'single':
-                    sheets = [Api.GetSheet(sheetName)] 
+                sheets = [Api.GetSheet(sheetName)]
                 break;
             case 'all':
                 sheets = Api.GetSheets();
@@ -82,11 +83,16 @@
         }
         console.log(sheets);
         // конец список листов
-        
+
+        // ищем, записываем в итоговый массив имя листа и адрес ячейки
         const resultArray = sheets.map(sheet => {
-            const lastRow = getLastRow(sheet);
-            const range = sheet.GetRange(`A1:ZZ${lastRow}`);
-            return findValue(sheet, range, searchValue);
+            const lastRow = getLastRow(sheet, searchRange);
+            searchRange = searchRange.replace(/\d+$/, lastRow)
+            const range = sheet.GetRange(searchRange);
+            const {start, end} = parseXLRange(searchRange) //исправить логику
+            const startRow = start[0] //исправить логику
+            const startCol = start[1] //исправить логику
+            return findValue(sheet, range, searchValue, startRow, startCol);
         }).filter(Boolean);
         console.info('resultArray: ');
         console.info(resultArray);
@@ -105,21 +111,57 @@
 
         return result;
 
+
+        // фукнция проверки корректности введенного диапазона (соответствует формату диапазона Excel)
         function checkRange(range) {
-            console.log(range)
             const regexRange = /^([A-Z]{1,3})(\d{1,7}):([A-Z]{1,3})(\d{1,7})$/i
-            console.log(regexRange.test(range))
             if (!regexRange.test(range)) return false
             const [_, col1, row1, col2, row2] = regexRange.exec(range)
-            console.log(col1 <= col2 && row1 <= row2)
-            console.log([col1, col2, row1, row2])
-            return col1 <= col2 && parseInt(row1) <= parseInt(row2)
+            return col1 <= col2 && parseInt(row1) <= parseInt(row2) //проверяется корректность диапазона, например Z100:A10 не пройдет обе проверки
         }
 
-        function getLastRow(sh) {
-            for (let row = 5000; row > 0; row--) {
+        // преобразование адреса вида XL (A1:ZZ5000) в координаты (0, 0, 4999, 701)
+        function parseXLRange(range) {
+            const [startCell, endCell] = range.split(':')
+
+            function parseXLCell(cell) {
+                const cellRegex = /^([A-Za-z]+)(\d+)$/
+                const match = cell.match(cellRegex)
+                const colLetters = match[1].toUpperCase();
+                const rowNumber = parseInt(match[2], 10);
+                let colNumber = 0
+                for (let i = 0; i < colLetters.length; i++) {
+                    colNumber = colNumber * 26 + (colLetters.charCodeAt(i) - 65 + 1)
+                }
+                return {
+                    col: colNumber - 1,
+                    row: rowNumber - 1
+                }
+            }
+
+            const start = parseXLCell(startCell)
+            const end = parseXLCell(endCell)
+            
+            // console.log(start.row, start.col, end.row, end.col)
+
+            return {
+                start: [start.row, start.col],
+                end: [end.row, end.col]
+            }
+        }
+
+
+        // фукнция нахождения последней заполненной строки в диапазоне
+        function getLastRow(sh, XLrange) {
+            const {start, end} = parseXLRange(XLrange) 
+            const startRow = start[0]
+            const startCol = start[1]
+            const endRow = end[0]
+            const endCol = end[1]
+
+            for (let row = endRow; row > startRow; row--) {
                 let rowValues = [];
-                for (let col = 0; col < 701; col++) { // A-ZZ
+                for (let col = startCol; col < endCol; col++) { 
                     let cellValue = sh.GetRangeByNumber(row, col).GetValue();
                     if (cellValue) rowValues.push(cellValue);
                 }
@@ -128,23 +170,25 @@
                     return row + 1;
                 }
             }
-            return 5000
+            return endRow
         }
 
-        function findValue(sheet, range, value) {
+        // функция для поиска ячеек с нужным значением в определенном диапазоне
+        function findValue(sheet, range, value, startRow, startCol) {
             let findedCells = [];
             let data = range.GetValue();
+            value = value.toLowerCase()
             // value = String(value)
             data.forEach((row, rowIndex) => {
                 row.forEach((cell, colIndex) => {
                     // cell = String(cell)
-                    if (cell === value) {
-                        findedCells.push(sheet.GetRangeByNumber(rowIndex, colIndex).GetAddress(false, false, "xlA1", false));
+                    if (cell.toLowerCase() === value) {
+                        findedCells.push(sheet.GetRangeByNumber(rowIndex + startRow, colIndex + startCol).GetAddress(false, false, "xlA1", false));
                     }
                 });
             });
 
-            return findedCells.length > 0? [sheet.GetName(), findedCells] : false
+            return findedCells.length > 0 ? [sheet.GetName(), findedCells] : false
         }
 
     }
@@ -163,6 +207,7 @@
             Asc.scope.sheetName = sheetName;
             Asc.scope.searchValue = searchValue;
             Asc.scope.searchMode = searchMode;
+            // Asc.scope.searchType = searchType;
             window.Asc.plugin.callCommand(findValuesInWorkbook, false, true, function (value) {
                 resolve(value);
             });
