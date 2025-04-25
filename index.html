@@ -12,7 +12,7 @@
 
   <body>
     <div id="header">
-      <p>Диапазон поиска:</p>
+      <p class="title">Диапазон поиска</p>
       <input
         id="search_range_value"
         type="text"
@@ -26,7 +26,7 @@
 
     <div class="inputs">
       <div id="sheet-name-container">
-        <label for="sheet-name">Выбор листа:</label>
+        <label for="sheet-name">Выбор листа</label>
         <select id="sheet-name"></select>
       </div>
     </div>
@@ -46,18 +46,19 @@
 
     <hr class="divider" />
 
+    <span class="title">Значение для поиска</span>
     <div class="labels">
       <label>
-        <input type="radio" name="search-type" value="#NAME!" />
-        Искать #ИМЯ
+        <input type="radio" name="search-type" value="#NAME?" />
+        Искать #ИМЯ?
       </label>
       <label>
         <input type="radio" name="search-type" value="#REF!" />
-        Искать #ССЫЛКА
+        Искать #ССЫЛКА!
       </label>
       <label>
         <input type="radio" name="search-type" value="#VALUE!" />
-        Искать #ЗНАЧ
+        Искать #ЗНАЧ!
       </label>
       <label>
         <input type="radio" name="search-type" value="#N/A" />
@@ -69,9 +70,10 @@
       </label>
     </div>
 
+    <hr class="divider-null" />
+
     <div class="inputs">
       <div id="value-container">
-        <label for="search-value">Значение:</label>
         <!-- Дефолт значение - неразрывный проблел ' ' -->
         <input id="search-value" type="text" value="&nbsp" />
       </div>
@@ -80,6 +82,21 @@
         перед вводом нового значения
       </div>
     </div>
+
+    <hr class="divider" />
+
+    <span class="title">Тип поиска</span>
+    <div class="labels">
+      <label>
+        <input type="radio" name="search-match" value="exact" checked/>
+        Полное совпадение
+      </label>
+      <label>
+        <input type="radio" name="search-match" value="includes" />
+        Вхождение
+      </label>
+    </div>
+
     <div id="start-container">
       <button id="start-button">Найти</button>
     </div>

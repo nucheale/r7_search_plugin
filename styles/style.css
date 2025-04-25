@@ -2,8 +2,7 @@ body {
   font-family: Arial, sans-serif;
   display: flex;
   flex-direction: column;
-  justify-content: start;
-  align-items: center;
+  justify-content: flex-start;
   margin: 0;
   padding: 2%;
   color: #000;
@@ -12,38 +11,38 @@ body {
 .divider {
   width: 100%;
   height: 1px;
-  /* background-color: #ccc; */
-  /* border: 1px solid red;  */
-  margin: 6px 0;
+  margin: 20px 0;
 }
 
 .divider-null {
   width: 100%;
-  height: 0px;
-  /* background-color: #ccc; */
-  border: 0; 
+  height: 0;
+  border: 0;
   margin: 6px 0;
+}
+
+.title {
+  font-weight: bold;
+  margin: 0 0 16px 0;
 }
 
 #header {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: flex-start;
   width: 100%;
   text-align: left;
   font-weight: bold;
-  /* margin-bottom: 15px; */
 }
 
 #header input {
-  /* width: 60%; */
-  padding: 4px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 12px;
 }
 
 .labels label {
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -56,12 +55,12 @@ body {
   gap: 10px;
   width: 100%;
   max-width: 600px;
-  /* margin-bottom: 15px; */
 }
 
 .inputs div {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
   width: 100%;
 }
@@ -73,20 +72,14 @@ body {
   font-weight: bold;
 }
 
-.inputs select {
-  /* flex-grow: 1; */
-  width: 60%;
-  padding: 4px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
+select,
+input[type="text"],
 .inputs input {
-  /* flex-grow: 1; */
   width: 60%;
-  padding: 4px;
+  padding: 2px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  font-size: 12px;
 }
 
 #search-comment-container {
@@ -94,8 +87,7 @@ body {
   font-size: 12px;
   font-style: italic;
   color: #555;
-  max-width: 600px;
-  text-align: justify;
+  max-width: 600px
 }
 
 #start-container {
@@ -119,17 +111,8 @@ body {
   background-color: #316947;
 }
 
-#result-message {
-  max-height: 500px;
-  width: 100%;
-  white-space: pre-wrap;
-  margin-top: 20px;
-  font-weight: bold;
-  text-align: left;
-  overflow-y: auto;
-}
-
 .hidden {
+  /* display: none; */
   visibility: hidden;
   opacity: 0;
   pointer-events: none;

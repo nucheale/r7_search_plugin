@@ -23,4 +23,4 @@ def create_plugin_archive(name_plugin: str):
     os.rename(f"{name_plugin}.zip", f"{name_plugin}.plugin")
 
 
-create_plugin_archive("find_values")
+create_plugin_archive("R7_SEARCH")

@@ -35,8 +35,9 @@
             // определяем остальные основные переменные
             const searchRange = document.getElementById('search_range_value').value
             const searchMode = document.querySelector('input[name="search-mode"]:checked').value;
+            const searchMatch = document.querySelector('input[name="search-match"]:checked').value;
             const sheetName = sheetSelect.value;
-            const result = await main(searchRange, sheetName, searchValue, searchMode);
+            const result = await main(searchRange, sheetName, searchValue, searchMode, searchMatch);
             resultMessage.innerText = result;
         });
     };
@@ -70,6 +71,7 @@
 
         const searchValue = Asc.scope.searchValue;
         const searchMode = Asc.scope.searchMode;
+        const searchMatch = Asc.scope.searchMatch;
         const sheetName = Asc.scope.sheetName;
         let sheets = [];
         // получаем список листов для поиска
@@ -89,10 +91,10 @@
             const lastRow = getLastRow(sheet, searchRange);
             searchRange = searchRange.replace(/\d+$/, lastRow)
             const range = sheet.GetRange(searchRange);
-            const {start, end} = parseXLRange(searchRange) //исправить логику
+            const { start, end } = parseXLRange(searchRange) //исправить логику
             const startRow = start[0] //исправить логику
             const startCol = start[1] //исправить логику
-            return findValue(sheet, range, searchValue, startRow, startCol);
+            return findValue(sheet, range, searchValue, startRow, startCol, searchMatch);
         }).filter(Boolean);
         console.info('resultArray: ');
         console.info(resultArray);
@@ -141,7 +143,7 @@
 
             const start = parseXLCell(startCell)
             const end = parseXLCell(endCell)
-            
+
             // console.log(start.row, start.col, end.row, end.col)
 
             return {
@@ -153,7 +155,7 @@
 
         // фукнция нахождения последней заполненной строки в диапазоне
         function getLastRow(sh, XLrange) {
-            const {start, end} = parseXLRange(XLrange) 
+            const { start, end } = parseXLRange(XLrange)
             const startRow = start[0]
             const startCol = start[1]
             const endRow = end[0]
@@ -161,7 +163,7 @@
 
             for (let row = endRow; row > startRow; row--) {
                 let rowValues = [];
-                for (let col = startCol; col < endCol; col++) { 
+                for (let col = startCol; col < endCol; col++) {
                     let cellValue = sh.GetRangeByNumber(row, col).GetValue();
                     if (cellValue) rowValues.push(cellValue);
                 }
@@ -174,16 +176,16 @@
         }
 
         // функция для поиска ячеек с нужным значением в определенном диапазоне
-        function findValue(sheet, range, value, startRow, startCol) {
+        function findValue(sheet, range, value, startRow, startCol, searchMatch) {
             let findedCells = [];
-            let data = range.GetValue();
-            value = value.toLowerCase()
-            // value = String(value)
+            const data = range.GetValue();
+            const normalizedValue = value.toLowerCase()
             data.forEach((row, rowIndex) => {
                 row.forEach((cell, colIndex) => {
-                    // cell = String(cell)
-                    if (cell.toLowerCase() === value) {
-                        findedCells.push(sheet.GetRangeByNumber(rowIndex + startRow, colIndex + startCol).GetAddress(false, false, "xlA1", false));
+                    const match = searchMatch === 'exact' ? cell.toLowerCase() === normalizedValue : cell.toLowerCase().includes(normalizedValue);
+                    if (match) {
+                        const address = sheet.GetRangeByNumber(rowIndex + startRow, colIndex + startCol).GetAddress(false, false, "xlA1", false)
+                        findedCells.push(address);
                     }
                 });
             });
@@ -201,13 +203,13 @@
         })
     }
 
-    async function main(searchRange, sheetName, searchValue, searchMode) {
+    async function main(searchRange, sheetName, searchValue, searchMode, searchMatch) {
         return new Promise((resolve) => {
             Asc.scope.searchRange = searchRange;
             Asc.scope.sheetName = sheetName;
             Asc.scope.searchValue = searchValue;
             Asc.scope.searchMode = searchMode;
-            // Asc.scope.searchType = searchType;
+            Asc.scope.searchMatch = searchMatch;
             window.Asc.plugin.callCommand(findValuesInWorkbook, false, true, function (value) {
                 resolve(value);
             });
