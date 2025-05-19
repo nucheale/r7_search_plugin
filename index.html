@@ -11,112 +11,113 @@
   </head>
 
   <body>
-    <div id="header">
-      <p class="title">Диапазон поиска</p>
-      <input
-        id="search_range_value"
-        type="text"
-        spellcheck="false"
-        placeholder="A1:Z1000"
-        value="A1:ZZ5000"
-      />
-    </div>
-
-    <hr class="divider" />
-
-    <div class="inputs">
-      <div id="sheet-name-container">
-        <label for="sheet-name">Выбор листа</label>
-        <select id="sheet-name"></select>
+    <div id="main-container">
+      <div id="header">
+        <p class="title">Диапазон поиска</p>
+        <input
+          id="search_range_value"
+          type="text"
+          spellcheck="false"
+          placeholder="A1:Z1000"
+          value="A1:ZZ5000"
+        />
       </div>
-    </div>
 
-    <hr class="divider-null" />
+      <hr class="divider" />
 
-    <div class="labels">
-      <label>
-        <input type="radio" name="search-mode" value="single" checked />
-        Искать по указанному листу
-      </label>
-      <label>
-        <input type="radio" name="search-mode" value="all" />
-        Искать по всем листам
-      </label>
-    </div>
-
-    <hr class="divider" />
-
-    <span class="title">Значение для поиска</span>
-    <div class="labels">
-      <label>
-        <input type="radio" name="search-type" value="#NAME?" />
-        Искать #ИМЯ?
-      </label>
-      <label>
-        <input type="radio" name="search-type" value="#REF!" />
-        Искать #ССЫЛКА!
-      </label>
-      <label>
-        <input type="radio" name="search-type" value="#VALUE!" />
-        Искать #ЗНАЧ!
-      </label>
-      <label>
-        <input type="radio" name="search-type" value="#N/A" />
-        Искать #Н/Д
-      </label>
-      <label>
-        <input type="radio" name="search-type" value="any-text" checked />
-        Искать по вводу
-      </label>
-    </div>
-
-    <hr class="divider-null" />
-
-    <div class="inputs">
-      <div id="value-container">
-        <!-- Дефолт значение - неразрывный проблел ' ' -->
-        <input id="search-value" type="text" value="&nbsp" />
+      <div class="inputs">
+        <div id="sheet-name-container">
+          <label for="sheet-name">Выбор листа</label>
+          <select id="sheet-name"></select>
+        </div>
       </div>
-      <div id="search-comment-container">
-        По умолчанию установлено значение неразрывного пробела. Удалите его
-        перед вводом нового значения
+
+      <hr class="divider-null" />
+
+      <div class="labels">
+        <label>
+          <input type="radio" name="search-mode" value="single" checked />
+          Искать по указанному листу
+        </label>
+        <label>
+          <input type="radio" name="search-mode" value="all" />
+          Искать по всем листам
+        </label>
       </div>
+
+      <hr class="divider" />
+
+      <span class="title">Значение для поиска</span>
+      <div class="labels">
+        <label>
+          <input type="radio" name="search-type" value="#NAME?" />
+          Искать #ИМЯ?
+        </label>
+        <label>
+          <input type="radio" name="search-type" value="#REF!" />
+          Искать #ССЫЛКА!
+        </label>
+        <label>
+          <input type="radio" name="search-type" value="#VALUE!" />
+          Искать #ЗНАЧ!
+        </label>
+        <label>
+          <input type="radio" name="search-type" value="#N/A" />
+          Искать #Н/Д
+        </label>
+        <label>
+          <input type="radio" name="search-type" value="any-text" checked />
+          Искать по вводу
+        </label>
+      </div>
+
+      <hr class="divider-null" />
+
+      <div class="inputs">
+        <div id="value-container">
+          <!-- Дефолт значение - неразрывный проблел ' ' -->
+          <input id="search-value" type="text" value="&nbsp" />
+        </div>
+        <div id="search-comment-container">
+          По умолчанию установлено значение неразрывного пробела. Удалите его
+          перед вводом нового значения
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <span class="title">Тип поиска</span>
+      <div class="labels">
+        <label>
+          <input type="radio" name="search-match" value="exact" checked />
+          Полное совпадение
+        </label>
+        <label>
+          <input type="radio" name="search-match" value="includes" />
+          Вхождение
+        </label>
+      </div>
+
+      <hr class="divider" />
+
+      <span class="title">Область поиска</span>
+      <div class="labels">
+        <label>
+          <input type="radio" name="search-area" value="values" checked />
+          Значения
+        </label>
+        <label>
+          <input type="radio" name="search-area" value="formulas" />
+          Формулы
+        </label>
+      </div>
+
+      <div id="start-container">
+        <button id="start-button">Найти</button>
+      </div>
+
+      <div id="result-message"></div>
     </div>
-
-    <hr class="divider" />
-
-    <span class="title">Тип поиска</span>
-    <div class="labels">
-      <label>
-        <input type="radio" name="search-match" value="exact" checked/>
-        Полное совпадение
-      </label>
-      <label>
-        <input type="radio" name="search-match" value="includes" />
-        Вхождение
-      </label>
-    </div>
-
-    <hr class="divider" />
-
-    <span class="title">Область поиска</span>
-    <div class="labels">
-      <label>
-        <input type="radio" name="search-area" value="values" checked/>
-        Значения
-      </label>
-      <label>
-        <input type="radio" name="search-area" value="formulas" />
-        Формулы
-      </label>
-    </div>
-
-    <div id="start-container">
-      <button id="start-button">Найти</button>
-    </div>
-
-    <div id="result-message"></div>
-
     <script>
       // Скрытие/отображение ввода имени листа в зависимости от выбранного режима
       document

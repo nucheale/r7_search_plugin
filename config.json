@@ -1,10 +1,10 @@
 {
-    "name": "Поиск значений 19.05.2025",
+    "name": "Поиск значений",
     "guid": "asc.{f08f548c-f45d-46b0-b806-a72b51265a7c}",
     "baseUrl": "",
     "variations": [
         {
-            "description": "Поиск значений",
+            "description": "Поиск значений 20.05.2025",
             "url": "index.html",
             "icons": [
                 {

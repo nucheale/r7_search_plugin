@@ -86,7 +86,7 @@
         // console.log(sheets);
         // конец список листов
 
-        // ищем, записываем в итоговый массив имя листа и адрес ячейки
+        // ищем, записываем в итоговый массив имя листа и адреса ячееек/ячейки
         const resultArray = sheets.map(sheet => {
             const lastRow = getLastRow(sheet, searchRange);
             const sheetSearchRange = searchRange.replace(/\d+$/, lastRow)
@@ -94,8 +94,16 @@
             const { start, end } = parseXLRange(sheetSearchRange) //исправить логику
             const startRow = start[0] //исправить логику
             const startCol = start[1] //исправить логику
-            // тут нужно проверять searchArea и запускать разные функции по его значению. Написать функцию searchFormula.
-            return findValue(sheet, range, searchValue, startRow, startCol, searchMatch, searchArea);
+            const endRow = end[0] //исправить логику
+            const endCol = end[1] //исправить логику
+            // проверяем как искать - по значениям или по формулам, запускаем нужную функцию
+            switch (searchArea) {
+                case 'values':
+                    return findValue(sheet, range, searchValue, startRow, startCol, searchMatch);
+                case 'formulas':
+                    // return findFormula(sheet, searchValue, startRow, startCol, endRow, endCol, searchMatch)
+                    return findFormulaApi(sheet, range, searchValue, endRow, searchMatch)
+            }
         }).filter(Boolean);
         console.info('resultArray: ');
         console.info(resultArray);
@@ -194,6 +202,42 @@
             return findedCells.length > 0 ? [sheet.GetName(), findedCells] : false
         }
 
+        function findFormula(sheet, value, startRow, startCol, endRow, endCol, searchMatch) {
+            let findedCells = [];
+            const normalizedValue = value.toLowerCase()
+            for (let i = startRow; i <= endRow; i++) {
+                for (let j = startCol; j <= endCol; j++) {
+                    let cellFormula = sheet.GetRangeByNumber(i, j).GetFormula()
+                    cellFormula = cellFormula.slice(0, 1) + cellFormula.slice(2)
+                    console.log(cellFormula.toLowerCase())
+                    const match = searchMatch === 'exact' ? cellFormula.toLowerCase() === normalizedValue : cellFormula.toLowerCase().includes(normalizedValue);
+                    if (match) {
+                        const address = sheet.GetRangeByNumber(i, j).GetAddress(false, false, "xlA1", false)
+                        findedCells.push(address);
+                    }
+                }
+            }
+
+            return findedCells.length > 0 ? [sheet.GetName(), findedCells] : false
+        }
+
+        function findFormulaApi(sheet, range, value, endRow, searchMatch) {
+            let findedCells = [];
+            let firstFoundedCell = range.Find(value, "A1", "xlFormulas", "xlPart", "xlByColumns", "xlNext", false);
+            if (!firstFoundedCell) return false;
+            let firstAddress = sheet.GetRange(firstFoundedCell).GetAddress(false, false, "xlA1", false);
+            findedCells.push(firstAddress);
+            let currentCell = firstFoundedCell;
+            for (let i = 1; i <= endRow; i++) {
+                let nextCell = range.FindNext(currentCell);
+                let nextAddress = sheet.GetRange(nextCell).GetAddress(false, false, "xlA1", false);
+                if (nextAddress === firstAddress) break //выход из цикла если больше ничего не найдено (т.е. нашли ту же ячейку)
+                findedCells.push(nextAddress);
+                currentCell = nextCell;
+            }
+
+            return [sheet.GetName(), findedCells];
+        }
     }
 
     async function main0() {

@@ -1,11 +1,23 @@
 body {
   font-family: Arial, sans-serif;
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* justify-content: flex-start; */
+  margin: 0;
+  padding: 0;
+  /* color: #000; */
+}
+
+#main-container {
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   margin: 0;
   padding: 2%;
-  color: #000;
+  /* color: #000; */
 }
 
 .divider {
@@ -87,7 +99,7 @@ input[type="text"],
   font-size: 12px;
   font-style: italic;
   color: #555;
-  max-width: 600px
+  max-width: 600px;
 }
 
 #start-container {
@@ -110,6 +122,13 @@ input[type="text"],
 #start-button:hover {
   background-color: #316947;
 }
+
+/* #result-message {
+  max-height: 200px;
+  overflow-y: auto;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+} */
 
 .hidden {
   /* display: none; */

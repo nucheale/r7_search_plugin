@@ -11,7 +11,7 @@ def create_plugin_archive(name_plugin: str):
     for root, dirs, files in os.walk("."):
 
         for file in files:
-            if file != "main.py":
+            if file != "plugin_build.py":
                 files_to_archive.append(os.path.join(root, file))
 
     print(files_to_archive)
