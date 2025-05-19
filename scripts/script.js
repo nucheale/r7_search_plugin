@@ -36,8 +36,9 @@
             const searchRange = document.getElementById('search_range_value').value
             const searchMode = document.querySelector('input[name="search-mode"]:checked').value;
             const searchMatch = document.querySelector('input[name="search-match"]:checked').value;
+            const searchArea = document.querySelector('input[name="search-area"]:checked').value;
             const sheetName = sheetSelect.value;
-            const result = await main(searchRange, sheetName, searchValue, searchMode, searchMatch);
+            const result = await main(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea);
             resultMessage.innerText = result;
         });
     };
@@ -61,17 +62,16 @@
         let result = '';
 
         // проверяем корректность диапазона для поиска
-        let searchRange = Asc.scope.searchRange
+        const searchRange = Asc.scope.searchRange
         if (!checkRange(searchRange)) {
             result = 'Неверный диапазон'
             return result
         }
 
-        parseXLRange(searchRange)
-
         const searchValue = Asc.scope.searchValue;
         const searchMode = Asc.scope.searchMode;
         const searchMatch = Asc.scope.searchMatch;
+        const searchArea = Asc.scope.searchArea;
         const sheetName = Asc.scope.sheetName;
         let sheets = [];
         // получаем список листов для поиска
@@ -83,18 +83,19 @@
                 sheets = Api.GetSheets();
                 break;
         }
-        console.log(sheets);
+        // console.log(sheets);
         // конец список листов
 
         // ищем, записываем в итоговый массив имя листа и адрес ячейки
         const resultArray = sheets.map(sheet => {
             const lastRow = getLastRow(sheet, searchRange);
-            searchRange = searchRange.replace(/\d+$/, lastRow)
-            const range = sheet.GetRange(searchRange);
-            const { start, end } = parseXLRange(searchRange) //исправить логику
+            const sheetSearchRange = searchRange.replace(/\d+$/, lastRow)
+            const range = sheet.GetRange(sheetSearchRange);
+            const { start, end } = parseXLRange(sheetSearchRange) //исправить логику
             const startRow = start[0] //исправить логику
             const startCol = start[1] //исправить логику
-            return findValue(sheet, range, searchValue, startRow, startCol, searchMatch);
+            // тут нужно проверять searchArea и запускать разные функции по его значению. Написать функцию searchFormula.
+            return findValue(sheet, range, searchValue, startRow, startCol, searchMatch, searchArea);
         }).filter(Boolean);
         console.info('resultArray: ');
         console.info(resultArray);
@@ -161,9 +162,9 @@
             const endRow = end[0]
             const endCol = end[1]
 
-            for (let row = endRow; row > startRow; row--) {
+            for (let row = endRow; row >= startRow; row--) {
                 let rowValues = [];
-                for (let col = startCol; col < endCol; col++) {
+                for (let col = startCol; col <= endCol; col++) {
                     let cellValue = sh.GetRangeByNumber(row, col).GetValue();
                     if (cellValue) rowValues.push(cellValue);
                 }
@@ -176,7 +177,7 @@
         }
 
         // функция для поиска ячеек с нужным значением в определенном диапазоне
-        function findValue(sheet, range, value, startRow, startCol, searchMatch) {
+        function findValue(sheet, range, value, startRow, startCol, searchMatch, searchArea) {
             let findedCells = [];
             const data = range.GetValue();
             const normalizedValue = value.toLowerCase()
@@ -203,13 +204,14 @@
         })
     }
 
-    async function main(searchRange, sheetName, searchValue, searchMode, searchMatch) {
+    async function main(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea) {
         return new Promise((resolve) => {
             Asc.scope.searchRange = searchRange;
             Asc.scope.sheetName = sheetName;
             Asc.scope.searchValue = searchValue;
             Asc.scope.searchMode = searchMode;
             Asc.scope.searchMatch = searchMatch;
+            Asc.scope.searchArea = searchArea;
             window.Asc.plugin.callCommand(findValuesInWorkbook, false, true, function (value) {
                 resolve(value);
             });
