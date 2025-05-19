@@ -3,7 +3,7 @@
         let resultMessage = document.getElementById('result-message');
         let sheetSelect = document.getElementById('sheet-name');
         sheetSelect.innerHTML = '';
-        const [allSheets, activeSheet] = await main0();
+        const [allSheets, activeSheet] = await findSheetNamesInit();
 
         allSheets.forEach(sheet => {
             let option = document.createElement('option');
@@ -38,7 +38,7 @@
             const searchMatch = document.querySelector('input[name="search-match"]:checked').value;
             const searchArea = document.querySelector('input[name="search-area"]:checked').value;
             const sheetName = sheetSelect.value;
-            const result = await main(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea);
+            const result = await mainInit(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea);
             resultMessage.innerText = result;
         });
     };
@@ -95,7 +95,7 @@
             const startRow = start[0] //исправить логику
             const startCol = start[1] //исправить логику
             const endRow = end[0] //исправить логику
-            const endCol = end[1] //исправить логику
+            // const endCol = end[1] //исправить логику
             // проверяем как искать - по значениям или по формулам, запускаем нужную функцию
             switch (searchArea) {
                 case 'values':
@@ -202,24 +202,24 @@
             return findedCells.length > 0 ? [sheet.GetName(), findedCells] : false
         }
 
-        function findFormula(sheet, value, startRow, startCol, endRow, endCol, searchMatch) {
-            let findedCells = [];
-            const normalizedValue = value.toLowerCase()
-            for (let i = startRow; i <= endRow; i++) {
-                for (let j = startCol; j <= endCol; j++) {
-                    let cellFormula = sheet.GetRangeByNumber(i, j).GetFormula()
-                    cellFormula = cellFormula.slice(0, 1) + cellFormula.slice(2)
-                    console.log(cellFormula.toLowerCase())
-                    const match = searchMatch === 'exact' ? cellFormula.toLowerCase() === normalizedValue : cellFormula.toLowerCase().includes(normalizedValue);
-                    if (match) {
-                        const address = sheet.GetRangeByNumber(i, j).GetAddress(false, false, "xlA1", false)
-                        findedCells.push(address);
-                    }
-                }
-            }
+        // function findFormula(sheet, value, startRow, startCol, endRow, endCol, searchMatch) {
+        //     let findedCells = [];
+        //     const normalizedValue = value.toLowerCase()
+        //     for (let i = startRow; i <= endRow; i++) {
+        //         for (let j = startCol; j <= endCol; j++) {
+        //             let cellFormula = sheet.GetRangeByNumber(i, j).GetFormula()
+        //             cellFormula = cellFormula.slice(0, 1) + cellFormula.slice(2)
+        //             console.log(cellFormula.toLowerCase())
+        //             const match = searchMatch === 'exact' ? cellFormula.toLowerCase() === normalizedValue : cellFormula.toLowerCase().includes(normalizedValue);
+        //             if (match) {
+        //                 const address = sheet.GetRangeByNumber(i, j).GetAddress(false, false, "xlA1", false)
+        //                 findedCells.push(address);
+        //             }
+        //         }
+        //     }
 
-            return findedCells.length > 0 ? [sheet.GetName(), findedCells] : false
-        }
+        //     return findedCells.length > 0 ? [sheet.GetName(), findedCells] : false
+        // }
 
         function findFormulaApi(sheet, range, value, endRow, searchMatch) {
             let findedCells = [];
@@ -240,7 +240,7 @@
         }
     }
 
-    async function main0() {
+    async function findSheetNamesInit() {
         return new Promise((resolve) => {
             window.Asc.plugin.callCommand(findSheetNames, false, false, function (value) {
                 resolve(value)
@@ -248,7 +248,7 @@
         })
     }
 
-    async function main(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea) {
+    async function mainInit(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea) {
         return new Promise((resolve) => {
             Asc.scope.searchRange = searchRange;
             Asc.scope.sheetName = sheetName;
