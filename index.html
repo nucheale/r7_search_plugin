@@ -7,154 +7,178 @@
     <script type="text/javascript" src="./scripts/plugins-ui.js"></script>
     <link rel="stylesheet" href="./styles/plugins.css" />
     <script type="text/javascript" src="./scripts/script.js"></script>
+    <script src="./scripts/markup.js" defer></script>
     <link rel="stylesheet" href="./styles/style.css" />
   </head>
 
   <body>
     <div id="main-container">
-      <div id="header">
-        <p class="title">Диапазон поиска</p>
-        <input
-          id="search_range_value"
-          type="text"
-          spellcheck="false"
-          placeholder="A1:Z1000"
-          value="A1:ZZ5000"
-        />
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="tab1">Поиск</button>
+        <button class="tab-btn" data-tab="tab2">Работа с книгой</button>
+        <button class="tab-btn" data-tab="tab3">Вкладка 3</button>
       </div>
-
-      <hr class="divider" />
-
-      <div class="inputs">
-        <div id="sheet-name-container">
-          <label for="sheet-name">Выбор листа</label>
-          <select id="sheet-name"></select>
+      <div class="tab active" id="tab1">
+        <div id="header">
+          <p class="title">Диапазон поиска</p>
+          <input
+            id="search_range_value"
+            type="text"
+            spellcheck="false"
+            placeholder="A1:Z1000"
+            value="A1:ZZ5000"
+          />
         </div>
-      </div>
 
-      <hr class="divider-null" />
+        <hr class="divider" />
 
-      <div class="labels">
-        <label>
-          <input type="radio" name="search-mode" value="single" checked />
-          Искать по указанному листу
-        </label>
-        <label>
-          <input type="radio" name="search-mode" value="all" />
-          Искать по всем листам
-        </label>
-      </div>
+        <div class="inputs">
+          <div class="label-select" id="sheet-name-container">
+            <!-- <label for="sheet-name">Выбор листа</label> -->
+            <p class="title">Выбор листа</p>
+            <select id="sheet-name"></select>
+            <hr class="divider-null" />
+          </div>
+        </div>
+        <div class="labels">
+          <label>
+            <input type="radio" name="search-mode" value="single" checked />
+            Искать по указанному листу
+          </label>
+          <label>
+            <input type="radio" name="search-mode" value="all" />
+            Искать по всем листам
+          </label>
+        </div>
 
-      <hr class="divider" />
+        <hr class="divider" />
 
-      <span class="title">Значение для поиска</span>
-      <div class="labels">
-        <label>
-          <input type="radio" name="search-type" value="#NAME?" />
-          Искать #ИМЯ?
-        </label>
-        <label>
-          <input type="radio" name="search-type" value="#REF!" />
-          Искать #ССЫЛКА!
-        </label>
-        <label>
-          <input type="radio" name="search-type" value="#VALUE!" />
-          Искать #ЗНАЧ!
-        </label>
-        <label>
-          <input type="radio" name="search-type" value="#N/A" />
-          Искать #Н/Д
-        </label>
-        <label>
-          <input type="radio" name="search-type" value="any-text" checked />
-          Искать по вводу
-        </label>
-      </div>
+        <span class="title">Значение для поиска</span>
+        <hr class="divider-null" />
+        <div class="labels">
+          <label>
+            <input type="radio" name="search-type" value="#NAME?" />
+            Искать #ИМЯ?
+          </label>
+          <label>
+            <input type="radio" name="search-type" value="#REF!" />
+            Искать #ССЫЛКА!
+          </label>
+          <label>
+            <input type="radio" name="search-type" value="#VALUE!" />
+            Искать #ЗНАЧ!
+          </label>
+          <label>
+            <input type="radio" name="search-type" value="#N/A" />
+            Искать #Н/Д
+          </label>
+          <label>
+            <input type="radio" name="search-type" value="&nbsp" />
+            Искать неразрывный пробел (&nbsp)
+          </label>
+          <label>
+            <input type="radio" name="search-type" value="any-text" checked />
+            Искать по вводу
+          </label>
+        </div>
 
-      <hr class="divider-null" />
+        <hr class="divider-null" />
 
-      <div class="inputs">
         <div id="value-container">
           <!-- Дефолт значение - неразрывный проблел ' ' -->
-          <input id="search-value" type="text" value="&nbsp" />
+          <input id="search-value" type="text" value="" />
+          <!-- <hr class="divider-null" />
+          <div id="search-comment-container">
+            По умолчанию установлено значение неразрывного пробела. Удалите его
+            перед вводом нового значения
+          </div> -->
         </div>
-        <div id="search-comment-container">
-          По умолчанию установлено значение неразрывного пробела. Удалите его
-          перед вводом нового значения
+
+        <hr class="divider" />
+
+        <span class="title">Тип поиска</span>
+        <hr class="divider-null" />
+        <div class="labels">
+          <label>
+            <input type="radio" name="search-match" value="exact" checked />
+            Полное совпадение
+          </label>
+          <label>
+            <input type="radio" name="search-match" value="includes" />
+            Вхождение
+          </label>
+        </div>
+
+        <hr class="divider" />
+
+        <span class="title">Область поиска</span>
+        <hr class="divider-null" />
+        <div class="labels">
+          <label>
+            <input type="radio" name="search-area" value="values" checked />
+            Значения
+          </label>
+          <label>
+            <input type="radio" name="search-area" value="formulas" />
+            Формулы
+          </label>
+        </div>
+
+        <div id="start-container">
+          <button class="std-button large" id="start-button">Найти</button>
+        </div>
+
+        <div class="result-message" id="result-message-search"></div>
+      </div>
+
+      <div class="tab" id="tab2">
+        <div id="show-hid-sheets">
+          <p class="title">Скрытие/раскрытие листов</p>
+          <div class="checkboxes" id="sheet-names-checkboxes">
+            <label>
+              <input
+                type="checkbox"
+                name="checkbox-show-hid-sheets"
+                value="all"
+              />
+              Выбрать все
+            </label>
+          </div>
+          <hr class="divider-null" />
+          <button class="std-button" id="show-sheets-button">Раскрыть</button>
+          <button class="std-button" id="hide-sheets-button">Скрыть</button>
+          <div class="result-message" id="result-message-show-hid-sheets"></div>
+        </div>
+
+        <hr class="divider" />
+
+        <div id="get-def-names">
+          <p class="title">Именованные диапазоны на текущем листе</p>
+          <button class="std-button" id="show-def-names-button">Отобразить</button>
+          <div class="result-message" id="result-message-get-def-names"></div>
+        </div>
+
+        <hr class="divider" />
+
+        <div id="delete-def-ref">
+          <p class="title">Удаление #REF диапазонов в книге</p>
+          <button class="std-button" id="delete-def-ref-button">Выполнить</button>
+          <div class="result-message" id="result-message-delete-def-ref"></div>
+        </div>
+
+        <hr class="divider" />
+
+        <div id="get-dropdowns">
+          <p class="title">Выпадающие списки на текущем листе</p>
+          <button class="std-button" id="get-dropdowns-button">Отобразить</button>
+          <div class="result-message" id="result-message-get-dropdowns"></div>
         </div>
       </div>
 
-      <hr class="divider" />
-
-      <span class="title">Тип поиска</span>
-      <div class="labels">
-        <label>
-          <input type="radio" name="search-match" value="exact" checked />
-          Полное совпадение
-        </label>
-        <label>
-          <input type="radio" name="search-match" value="includes" />
-          Вхождение
-        </label>
-      </div>
-
-      <hr class="divider" />
-
-      <span class="title">Область поиска</span>
-      <div class="labels">
-        <label>
-          <input type="radio" name="search-area" value="values" checked />
-          Значения
-        </label>
-        <label>
-          <input type="radio" name="search-area" value="formulas" />
-          Формулы
-        </label>
-      </div>
-
-      <div id="start-container">
-        <button id="start-button">Найти</button>
-      </div>
-
-      <div id="result-message"></div>
+      <div class="tab" id="tab3"></div>
     </div>
     <script>
-      // Скрытие/отображение ввода имени листа в зависимости от выбранного режима
-      document
-        .querySelectorAll('input[name="search-mode"]')
-        .forEach((radio) => {
-          radio.addEventListener("change", function () {
-            const sheetNameContainer = document.getElementById(
-              "sheet-name-container"
-            );
 
-            if (this.value === "single") {
-              sheetNameContainer.classList.remove("hidden");
-            } else {
-              sheetNameContainer.classList.add("hidden");
-            }
-          });
-        });
-      // Скрытие/отображение ввода имени листа в зависимости от выбранного режима
-      document
-        .querySelectorAll('input[name="search-type"]')
-        .forEach((radio) => {
-          radio.addEventListener("change", function () {
-            const [valueContainer, searchCommentContainer] =
-              document.querySelectorAll(
-                "#value-container, #search-comment-container"
-              );
-            if (this.value === "any-text") {
-              [valueContainer, searchCommentContainer].forEach((e) => {
-                e.classList.remove("hidden");
-              });
-            } else {
-              [valueContainer, searchCommentContainer].forEach((e) => {
-                e.classList.add("hidden");
-              });
-            }
-          });
-        });
     </script>
   </body>
 </html>

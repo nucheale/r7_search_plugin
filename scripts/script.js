@@ -1,27 +1,63 @@
 (function (window, undefined) {
     window.Asc.plugin.init = async function () {
-        let resultMessage = document.getElementById('result-message');
+        let resultMessageSearch = document.getElementById('result-message-search');
+        let resultMessageShowHideSheets = document.getElementById('result-message-show-hid-sheets');
+        let resultMessageShowDefNames = document.getElementById('result-message-get-def-names');
+        let resultMessageDeleteDefRef = document.getElementById('result-message-delete-def-ref');
+        let resultMessageShowDropdowns = document.getElementById('result-message-get-dropdowns');
         let sheetSelect = document.getElementById('sheet-name');
+        let sheetCheckboxes = document.getElementById('sheet-names-checkboxes')
         sheetSelect.innerHTML = '';
         const [allSheets, activeSheet] = await findSheetNamesInit();
 
         allSheets.forEach(sheet => {
+            //добавляем в таб1 для выпадающего списка листов
             let option = document.createElement('option');
             option.value = option.textContent = sheet;
             if (sheet === activeSheet) option.selected = true;
             sheetSelect.appendChild(option);
+
+            //добавляем в таб2 чекбоксы с названиями листов
+            let label = document.createElement('label')
+            let checkbox = document.createElement('input');
+            checkbox.type = 'checkbox'
+            checkbox.name = 'checkbox-show-hid-sheets'
+            checkbox.value = sheet
+            sheetCheckboxes.appendChild(label)
+            label.appendChild(checkbox)
+            label.appendChild(document.createTextNode(sheet))
         });
 
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => { //обновление resultMessage при изменении инпутов
-            input.addEventListener('input', () => {
-                if (resultMessage.innerText) resultMessage.innerText = '';
+        //Убрать "Выбрать все" в чекбоксах. в markup не работает, т.к. чекбоксы генерируются здесь
+        document.querySelectorAll('input[name="checkbox-show-hid-sheets"]:not([value="all"])').forEach((cb) => {
+            cb.addEventListener("change", function () {
+                const allChecked = Array.from(document.querySelectorAll('input[name="checkbox-show-hid-sheets"]:not([value="all"])'))
+                    .every(cb => cb.checked);
+                allCheckbox.checked = allChecked;
             });
         });
+
+        const allInputs = document.querySelectorAll("input");
+        allInputs.forEach((input) => {
+            //обновление resultMessageSearch при изменении инпутов
+            input.addEventListener("input", () => {
+                if (resultMessageSearch.innerText) resultMessageSearch.innerText = "";
+            });
+        });
+
+        const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');
+        checkboxInputs.forEach((input) => {
+            //обновление resultMessageShowHideSheets при изменении инпутов
+            input.addEventListener("input", () => {
+                if (resultMessageShowHideSheets.innerText) resultMessageShowHideSheets.innerText = "";
+            });
+        });
+
+        //клик "Найти"
         document.getElementById('start-button').addEventListener('click', async function () {
-            console.info('start click handled')
-            resultMessage.innerText = 'Поиск...'
-            await new Promise(resolve => setTimeout(resolve, 500)); // Пауза 0,5 сек для корректного обновления resultMessage
+            console.info('start search click handled')
+            resultMessageSearch.innerText = 'Поиск...'
+            await new Promise(resolve => setTimeout(resolve, 500)); // Пауза 0,5 сек для корректного обновления resultMessageSearch
 
             // по типу поиска определяем значения для поиска (ЗНАЧ, ИМЯ, .., собственное значение) 
             const searchType = document.querySelector('input[name="search-type"]:checked').value;
@@ -38,9 +74,29 @@
             const searchMatch = document.querySelector('input[name="search-match"]:checked').value;
             const searchArea = document.querySelector('input[name="search-area"]:checked').value;
             const sheetName = sheetSelect.value;
-            const result = await mainInit(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea);
-            resultMessage.innerText = result;
+            const resultSearch = await mainInitSearch(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea);
+            resultMessageSearch.innerText = resultSearch;
         });
+
+        //клики "Раскрыть" / "Скрыть"
+        ['show-sheets-button', 'hide-sheets-button'].forEach(buttonId => {
+            document.getElementById(buttonId).addEventListener('click', async function () {
+                console.info('start hide-show-sheets click handled')
+                // определяем листы для раскрытия
+                let sheetsToShow = []
+                sheetsToShow = Array.from(document.querySelectorAll('input[name="checkbox-show-hid-sheets"]:checked')).map(checked_sheet => checked_sheet.value);
+                sheetsToShow = sheetsToShow.filter(value => value !== 'all')
+                let resultShowSheets
+                if (sheetsToShow.length > 0) {
+                    resultShowSheets = await mainInitShowHideSheets(sheetsToShow, buttonId)
+                    document.querySelectorAll('input[name="checkbox-show-hid-sheets"]').forEach(cb => { cb.checked = false }) //снимаем все чекбоксы после выполнения
+                } else {
+                    resultShowSheets = 'Не выбрано ни одного листа'
+                }
+                resultMessageShowHideSheets.innerText = resultShowSheets;
+            });
+        });
+
     };
 
     window.Asc.plugin.button = function (id) {
@@ -240,6 +296,23 @@
         }
     }
 
+    function showHideSheets() {
+        const sheets = Asc.scope.sheetNames
+        let mode = Asc.scope.mode
+        let visableState = false
+        if (mode === 'show-sheets-button') visableState = true
+        const activeSheet = Api.GetActiveSheet()
+
+        sheets.forEach(sh => {
+            let sheet = Api.GetSheet(sh)
+            if (sheet.GetVisible()) sheet.SetActive() //для корректного скрытия листа
+            if (sheet.GetName() !== activeSheet.GetName()) sheet.SetVisible(visableState) //с активным листом ничего не делаем
+        });
+
+        if (!sheets.includes(activeSheet)) activeSheet.SetActive()
+        return 'Выполнено'
+    }
+
     async function findSheetNamesInit() {
         return new Promise((resolve) => {
             window.Asc.plugin.callCommand(findSheetNames, false, false, function (value) {
@@ -248,7 +321,7 @@
         })
     }
 
-    async function mainInit(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea) {
+    async function mainInitSearch(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea) {
         return new Promise((resolve) => {
             Asc.scope.searchRange = searchRange;
             Asc.scope.sheetName = sheetName;
@@ -260,6 +333,16 @@
                 resolve(value);
             });
         });
+    }
+
+    async function mainInitShowHideSheets(sheets, mode) {
+        return new Promise((resolve) => {
+            Asc.scope.sheetNames = sheets
+            Asc.scope.mode = mode
+            window.Asc.plugin.callCommand(showHideSheets, false, true, function (value) {
+                resolve(value)
+            })
+        })
     }
 
 })(window, undefined);
