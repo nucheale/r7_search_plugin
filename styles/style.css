@@ -110,10 +110,11 @@ input[type="text"],
 }
 
 .std-button {
-  padding: 6px 12px;
-  font-size: 12px;
+  width: fit-content;
   background-color: #40865c;
   color: #fff;
+  padding: 6px 12px;
+  font-size: 12px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -129,8 +130,13 @@ input[type="text"],
   font-size: 14px;
 }
 
+.std-button.non-active {
+  background-color: #555;
+}
+
 .result-message {
   margin-top: 10px;
+  /* font-size: 12px; */
 }
 
 .hidden {

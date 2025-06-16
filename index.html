@@ -5,9 +5,10 @@
     <title>Поиск значений в таблице</title>
     <script type="text/javascript" src="./scripts/plugins.js"></script>
     <script type="text/javascript" src="./scripts/plugins-ui.js"></script>
-    <link rel="stylesheet" href="./styles/plugins.css" />
+    <script src="./scripts/xlsx.full.min.js"></script>
     <script type="text/javascript" src="./scripts/script.js"></script>
     <script src="./scripts/markup.js" defer></script>
+    <link rel="stylesheet" href="./styles/plugins.css" />
     <link rel="stylesheet" href="./styles/style.css" />
   </head>
 
@@ -25,8 +26,8 @@
             id="search_range_value"
             type="text"
             spellcheck="false"
-            placeholder="A1:Z1000"
-            value="A1:ZZ5000"
+            placeholder="A1:XFD1048576"
+            value=""
           />
         </div>
 
@@ -152,25 +153,27 @@
 
         <hr class="divider" />
 
-        <div id="get-def-names">
-          <p class="title">Именованные диапазоны на текущем листе</p>
-          <button class="std-button" id="show-def-names-button">Отобразить</button>
-          <div class="result-message" id="result-message-get-def-names"></div>
+        <div id="get-all-def-names">
+          <p class="title">Все именованные диапазоны на активном листе</p>
+          <label for="get-all-def-names-button" class="std-button">Выберите папку с активным файлом</label>
+          <input type="file" id="get-all-def-names-button" webkitdirectory directory style="display:none;">
+          <div class="result-message" id="result-message-get-all-def-names"></div>
         </div>
 
         <hr class="divider" />
 
-        <div id="delete-def-ref">
-          <p class="title">Удаление #REF диапазонов в книге</p>
-          <button class="std-button" id="delete-def-ref-button">Выполнить</button>
-          <div class="result-message" id="result-message-delete-def-ref"></div>
+        <div id="get-ref-def-names">
+          <p class="title">Все #REF диапазоны в книге</p>
+          <label for="get-ref-def-names-button" class="std-button">Выберите папку с активным файлом</label>
+          <input type="file" id="get-ref-def-names-button" webkitdirectory directory style="display:none;">
+          <div class="result-message" id="result-message-get-ref-def-names"></div>
         </div>
 
         <hr class="divider" />
 
         <div id="get-dropdowns">
           <p class="title">Выпадающие списки на текущем листе</p>
-          <button class="std-button" id="get-dropdowns-button">Отобразить</button>
+          <button class="std-button non-active" id="get-dropdowns-button">Отобразить</button>
           <div class="result-message" id="result-message-get-dropdowns"></div>
         </div>
       </div>

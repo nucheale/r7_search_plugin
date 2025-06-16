@@ -2,13 +2,13 @@
     window.Asc.plugin.init = async function () {
         let resultMessageSearch = document.getElementById('result-message-search');
         let resultMessageShowHideSheets = document.getElementById('result-message-show-hid-sheets');
-        let resultMessageShowDefNames = document.getElementById('result-message-get-def-names');
-        let resultMessageDeleteDefRef = document.getElementById('result-message-delete-def-ref');
+        let resultMessageGetAllDefNames = document.getElementById('result-message-get-all-def-names');
+        let resultMessageGetRefDefNames = document.getElementById('result-message-get-ref-def-names');
         let resultMessageShowDropdowns = document.getElementById('result-message-get-dropdowns');
         let sheetSelect = document.getElementById('sheet-name');
         let sheetCheckboxes = document.getElementById('sheet-names-checkboxes')
         sheetSelect.innerHTML = '';
-        const [allSheets, activeSheet] = await findSheetNamesInit();
+        const [allSheets, activeSheet, workbookName] = await findSheetNamesInit();
 
         allSheets.forEach(sheet => {
             //добавляем в таб1 для выпадающего списка листов
@@ -63,7 +63,7 @@
             const searchType = document.querySelector('input[name="search-type"]:checked').value;
             let searchValue
             if (searchType === 'any-text') {
-                searchValue = document.getElementById('search-value').value;
+                searchValue = document.getElementById('search-value').value
             } else {
                 searchValue = searchType
             }
@@ -97,7 +97,121 @@
             });
         });
 
-    };
+        //Клик "Отобразить" (именованные диапазоны на листе)
+        // document.getElementById('get-def-names-button').addEventListener('click', async function () {
+        //     console.log('start get-def-names-button handled')
+        //     resultMessageGetDefNames = await mainGetDefNamesOnSheet()
+        // })
+
+        //Выбор папки для всех именованных диапазонов на листе
+        document.getElementById("get-all-def-names-button").addEventListener("change", event => {
+            const files = event.target.files
+            let matchedFile
+            for (const file of files) {
+                const filePath = file.webkitRelativePath
+                if (filePath.includes(`/${workbookName}`)) {
+                    matchedFile = file
+                    break
+                } else {
+                    continue
+                }
+            }
+            console.log(matchedFile)
+            if (!matchedFile) return
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" })
+
+                let defNames
+                if (workbook.Workbook.Names) {
+                    defNames = workbook.Workbook.Names
+                } else {
+                    defNames = []
+                }
+
+                let activeSheetDefNames = []
+                defNames.forEach(defName => {
+                    const defNameRef = defName.Ref
+                    defNameRef.includes(activeSheet) ? activeSheetDefNames.push([defName.Name, defName.Ref]) : false
+                })
+
+                let output
+                if (defNames.length > 0) {
+                    output = activeSheetDefNames.map(defName => {
+                        return `${defName[0]}: ${defName[1]}`
+                    })
+                    output = output.join("\n\n")
+                } else {
+                    output = 'На активном листе отсутствуют именованные диапазоны'
+                }
+
+                resultMessageGetAllDefNames.innerText = output
+            }
+
+            reader.readAsArrayBuffer(matchedFile)
+        })
+
+
+        //Выбор папки для REF именованных диапазонов в КНИГЕ
+        document.getElementById("get-ref-def-names-button").addEventListener("change", event => {
+            const files = event.target.files
+            let matchedFile
+            for (const file of files) {
+                const filePath = file.webkitRelativePath
+                if (filePath.includes(`/${workbookName}`)) {
+                    matchedFile = file
+                    break
+                } else {
+                    continue
+                }
+            }
+
+            if (!matchedFile) {
+                resultMessageGetRefDefNames.innerText = 'Папка не содержит активный файл'
+                return
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" })
+
+                let defNames
+                if (workbook.Workbook.Names) {
+                    defNames = workbook.Workbook.Names
+                } else {
+                    defNames = []
+                }
+
+                let refDefNames = []
+                defNames.forEach(defName => {
+                    const defNameRef = defName.Ref
+                    defNameRef.includes('#REF') ? refDefNames.push([defName.Name, defName.Ref]) : false
+                })
+
+                let output
+                if (defNames.length > 0) {
+                    output = refDefNames.map(defName => {
+                        return `${defName[0]}: ${defName[1]}`
+                    })
+                    output = output.join("\n\n")
+                } else {
+                    output = 'REF диапазоны не найдены'
+                }
+
+                resultMessageGetRefDefNames.innerText = output
+
+            }
+
+            reader.readAsArrayBuffer(matchedFile)
+        })
+
+    }
+
+
+
 
     window.Asc.plugin.button = function (id) {
         this.executeCommand("close", "");
@@ -105,20 +219,22 @@
 
 
     function findSheetNames() {
+        const workbookName = Api.GetFullName()
         const activeSheet = Api.GetActiveSheet().GetName()
         const sheets = Api.GetSheets();
         let allSheets = []
         sheets.forEach(sheet => {
             allSheets.push(sheet.GetName())
         });
-        return [allSheets, activeSheet];
+        return [allSheets, activeSheet, workbookName];
     };
 
     function findValuesInWorkbook() {
         let result = '';
 
-        // проверяем корректность диапазона для поиска
-        const searchRange = Asc.scope.searchRange
+        // проверяем корректность пользовательского диапазона для поиска
+        let searchRange = Asc.scope.searchRange
+        if (searchRange == '') searchRange = 'A1:XFD1048576'
         if (!checkRange(searchRange)) {
             result = 'Неверный диапазон'
             return result
@@ -219,26 +335,48 @@
 
 
         // фукнция нахождения последней заполненной строки в диапазоне
-        function getLastRow(sh, XLrange) {
-            const { start, end } = parseXLRange(XLrange)
-            const startRow = start[0]
-            const startCol = start[1]
-            const endRow = end[0]
-            const endCol = end[1]
+        // function getLastRow(sh, XLrange) {
+        //     const { start, end } = parseXLRange(XLrange)
+        //     const startRow = start[0]
+        //     const startCol = start[1]
+        //     const endRow = end[0]
+        //     const endCol = end[1]
 
-            for (let row = endRow; row >= startRow; row--) {
-                let rowValues = [];
-                for (let col = startCol; col <= endCol; col++) {
-                    let cellValue = sh.GetRangeByNumber(row, col).GetValue();
-                    if (cellValue) rowValues.push(cellValue);
-                }
-                if (rowValues.join('').trim() !== '') {
-                    console.log(`lastRow: ${row + 1}`)
-                    return row + 1;
+        //     for (let row = endRow; row >= startRow; row--) {
+        //         let rowValues = [];
+        //         for (let col = startCol; col <= endCol; col++) {
+        //             let cellValue = sh.GetRangeByNumber(row, col).GetValue();
+        //             if (cellValue) rowValues.push(cellValue);
+        //         }
+        //         if (rowValues.join('').trim() !== '') {
+        //             console.log(`lastRow: ${row + 1}`)
+        //             return row + 1;
+        //         }
+        //     }
+        //     return endRow
+        // }
+
+        function getLastRow(sh, XLrange) {
+            // const data = sh.GetRange(XLrange).GetValue()
+            let data
+            if (XLrange == 'A1:XFD1048576') {
+                data = sh.GetUsedRange().GetValue()
+            } else {
+                data = sh.GetRange(XLrange).GetValue()
+                console.log(data)
+            }
+            console.log(`dl: ${data.length}`)
+            for (let i = data.length - 1; i >= 0; i--) {
+                const isEmptyRow = data[i].every(cell => cell === undefined)
+                if (!isEmptyRow) {
+                    console.log(`lastRow: ${i + 1}`)
+                    return i + 1
                 }
             }
-            return endRow
+            //!!!!!!! надо из parsexl взять startrow и прибавить его к i если диапазон кастомный!!!!!
+            return 0 // если все строки пустые
         }
+
 
         // функция для поиска ячеек с нужным значением в определенном диапазоне
         function findValue(sheet, range, value, startRow, startCol, searchMatch, searchArea) {
@@ -313,6 +451,13 @@
         return 'Выполнено'
     }
 
+    function getDefNamesOnSheet() {
+        const sheet = Api.GetActiveSheet()
+        const sheets = Api.GetSheets()
+        const sfd = Api.GetFullName()
+        console.log(sfd)
+    }
+
     async function findSheetNamesInit() {
         return new Promise((resolve) => {
             window.Asc.plugin.callCommand(findSheetNames, false, false, function (value) {
@@ -323,6 +468,10 @@
 
     async function mainInitSearch(searchRange, sheetName, searchValue, searchMode, searchMatch, searchArea) {
         return new Promise((resolve) => {
+            if (searchValue === '') {
+                resolve('Не введено значение для поиска');
+                return
+            }
             Asc.scope.searchRange = searchRange;
             Asc.scope.sheetName = sheetName;
             Asc.scope.searchValue = searchValue;
@@ -340,6 +489,14 @@
             Asc.scope.sheetNames = sheets
             Asc.scope.mode = mode
             window.Asc.plugin.callCommand(showHideSheets, false, true, function (value) {
+                resolve(value)
+            })
+        })
+    }
+
+    async function mainGetDefNamesOnSheet() {
+        return new Promise((resolve) => {
+            window.Asc.plugin.callCommand(getDefNamesOnSheet, false, false, function (value) {
                 resolve(value)
             })
         })
