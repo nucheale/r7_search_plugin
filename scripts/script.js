@@ -275,7 +275,7 @@
                 case 'values':
                     return findValue(sheet, sheetSearchRange, searchValue, startRow, startCol, searchMatch);
                 case 'formulas':
-                    return findFormula(sheet, sheetSearchRange, searchValue, startRow, startCol, endRow, lastCol, searchMatch)
+                    return findFormula(sheet, sheetSearchRange, searchValue, startRow, startCol, endRow, endCol, searchMatch)
                 // return findFormulaApi(sheet, range, searchValue, endRow, searchMatch)
             }
         }).filter(Boolean);
@@ -423,17 +423,18 @@
         function findFormula(sheet, range, value, startRow, startCol, endRow, endCol, searchMatch) {
             console.info('findFormula started')
             let findedCells = []
-            const data = sheet.GetRange(range).GetValue()
             const normalizedValue = value.toLowerCase()
-            data.forEach((row, rowIndex) => {
-                row.forEach((cell, colIndex) => {
+
+            for (let i = startRow; i <= endRow; i++) {
+                for (let j = startCol; j <= endCol; j++) {
+                    const cell = sheet.GetRangeByNumber(i, j).GetFormula()
                     const match = searchMatch === 'exact' ? cell.toLowerCase() === normalizedValue : cell.toLowerCase().includes(normalizedValue)
                     if (match) {
-                        const address = sheet.GetRangeByNumber(rowIndex + startRow, colIndex + startCol).GetAddress(false, false, 'xlA1', false)
+                        const address = sheet.GetRangeByNumber(i, j).GetAddress(false, false, 'xlA1', false)
                         findedCells.push(address)
                     }
-                })
-            })
+                }
+            }
 
             return findedCells.length > 0 ? [sheet.GetName(), findedCells] : false
         }
@@ -519,12 +520,12 @@
         })
     }
 
-    async function mainGetDefNamesOnSheet() {
-        return new Promise((resolve) => {
-            window.Asc.plugin.callCommand(getDefNamesOnSheet, false, false, function (value) {
-                resolve(value)
-            })
-        })
-    }
+    // async function mainGetDefNamesOnSheet() {
+    //     return new Promise((resolve) => {
+    //         window.Asc.plugin.callCommand(getDefNamesOnSheet, false, false, function (value) {
+    //             resolve(value)
+    //         })
+    //     })
+    // }
 
 })(window, undefined);
